@@ -1,52 +1,10 @@
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Optional
 
-from runtime.types import FutureBool, FutureInt, FutureString
-
-
-class Node:
-    '''Represents a node in specification tree.'''
-
-    @property
-    def childs(self) -> List['Node']:
-        raise NotImplementedError
-
-    _attrs: List = []
-
-    @classmethod
-    def attrs(cls):
-        return cls._attrs
-
-    @property
-    def type(self):
-        return self.__class__.__name__
-
-    def __str__(self):
-        return '<{}>'.format(self.type)
-
-    def __repr__(self):
-        return '<{type} {attrs}>'.format(
-            type=self.__class__.__name__,
-            attrs=', '.join(['{}={}'.format(attr, str(getattr(self, attr)))
-                             for attr in self.attrs()]))
-
-    def traverse(self, callback: Callable[['Node'], Any]):
-        for child in self.childs:
-            callback(child)
-            child.traverse(callback)
-
-    def to_json(self):
-        def _to_json(node):
-            return {
-                'type': node.type,
-                'attrs': {attr: str(getattr(node, attr))
-                          for attr in node.attrs()},
-                'childs': [_to_json(child) for child in node.childs]
-            }
-
-        return _to_json(self)
+from format.runtime.types import FutureBool, FutureInt, FutureString
+from format.tree import AttrNode, Node, SimpleAttrNode, SimpleNode, dfs, bfs
 
 
-class Value(Node):
+class Value(SimpleAttrNode):
     '''Represents raw byte sequence.
 
     Refers to words (terminal sequences).
@@ -54,16 +12,14 @@ class Value(Node):
 
     _attrs = ['length', 'endianness']
 
-    def __init__(self, length: FutureInt, endianness: FutureString = 'big'):
-        self.length = length
-        self.endianness = endianness
-
-    @property
-    def childs(self):
-        return []
+    def __init__(self, length: FutureInt, parent: Optional[Node] = None,
+                 endianness: FutureString = 'big'):
+        super().__init__([], parent,
+                         length=length,
+                         endianness=endianness)
 
 
-class Type(Node):
+class Type(SimpleAttrNode):
     '''Represents structured type.
 
     Refers to nonterminal symbol.
@@ -71,83 +27,46 @@ class Type(Node):
 
     _attrs = ['name']
 
-    def __init__(self, name: str, struct: List[Node]):
-        self.name = name
-        self.struct = struct
-
-    @property
-    def childs(self):
-        return self.struct
+    def __init__(self, name: str, struct: List[Node],
+                 parent: Optional[Node] = None):
+        super().__init__(struct, parent, name=name)
 
 
 class OptionalType(Type):
 
     _attrs = ['name', 'condition']
 
-    def __init__(self, name: str, struct: List[Node], condition: FutureBool):
+    def __init__(self, name: str, struct: List[Node], condition: FutureBool,
+                 parent: Optional[Node] = None):
         super().__init__(name, struct)
         self.condition = condition
 
 
-class Select(Node):
-    def __init__(self, variants: List[Node]):
-        self.variants = variants
-
-    @property
-    def childs(self):
-        return self.variants
+class Select(SimpleNode):
+    def __init__(self, variants: List[Node], parent: Optional[Node] = None):
+        super().__init__(variants, parent)
 
 
-class Repeat(Node):
+class Repeat(SimpleNode):
     '''Represents repeated structure.
 
-    Refers to recursion in grammar.
+    Refers to recursion in grammars.
     '''
 
-    def __init__(self, body: Node):
-        self.body = body
-
-    @property
-    def childs(self):
-        return [self.body]
+    pass
 
 
-class RepeatCount(Repeat):
+class RepeatCount(SimpleAttrNode, Repeat):
     '''Represents structure, repeated specified times.'''
 
     _attrs = ['count']
 
-    def __init__(self, body: Node, count: FutureInt):
-        super().__init__(body)
-        self.count = count
+    def __init__(self, body: Node, count: FutureInt, parent: Optional[Node] = None):
+        super().__init__([body], parent, count=count)
 
 
 class RepeatUntil(Repeat):
-    _attrs = ['delimiter']
+    '''Represents structure, repeated until special symbol come across.'''
 
-    def __init__(self, body: Node, delimiter: Value):
-        super().__init__(body)
-        self.delimiter = delimiter
-
-
-if __name__ == "__main__":
-    import json
-
-    class Int(Type):
-        def __init__(self):
-            val = Value(FutureInt('4'))
-            super().__init__('Int', [val])
-
-    t1 = Type('mytype', [Value(FutureInt('1')), Value(FutureInt('3'))])
-    t2 = RepeatCount(t1, FutureInt('3'))
-
-    t3 = OptionalType('opttype', [Int()], FutureBool('true'))
-    t4 = Select([t3, t1])
-
-    t5 = Type('magic', [Value(FutureInt('2'))])
-
-    t5 = Type('big', [t5, t2, t4])
-
-    print(
-        json.dumps(t5.to_json(), indent=4)
-    )
+    def __init__(self, body: Node, delimiter: Value, parent: Optional[Node] = None):
+        super().__init__([body, delimiter], parent)
