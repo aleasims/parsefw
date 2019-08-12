@@ -4,7 +4,11 @@ from format.runtime.types import FutureBool, FutureInt, FutureString
 from format.tree import AttrNode, Node, SimpleAttrNode, SimpleNode, dfs, bfs
 
 
-class Value(SimpleAttrNode):
+class SpecNode(Node):
+    pass
+
+
+class Value(SimpleAttrNode, SpecNode):
     '''Represents raw byte sequence.
 
     Refers to words (terminal sequences).
@@ -19,7 +23,7 @@ class Value(SimpleAttrNode):
                          endianness=endianness)
 
 
-class Type(SimpleAttrNode):
+class Type(SimpleAttrNode, SpecNode):
     '''Represents structured type.
 
     Refers to nonterminal symbol.
@@ -42,12 +46,12 @@ class OptionalType(Type):
         self.condition = condition
 
 
-class Select(SimpleNode):
+class Select(SimpleNode, SpecNode):
     def __init__(self, variants: List[Node], parent: Optional[Node] = None):
         super().__init__(variants, parent)
 
 
-class Repeat(SimpleNode):
+class Repeat(SpecNode):
     '''Represents repeated structure.
 
     Refers to recursion in grammars.

@@ -1,3 +1,7 @@
+"""This module only responsible for abstract tree 
+manipulations.
+"""
+
 import queue
 from typing import Any, Callable, Generator, List, Optional
 
