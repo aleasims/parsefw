@@ -27,6 +27,12 @@ class Node:
     def __repr__(self):
         return '<{}>'.format(self.type)
 
+    def bfs(self):
+        yield from bfs(self)
+
+    def dfs(self):
+        yield from dfs(self)
+
 
 class AttrNode(Node):
     '''Attribute tree node interface.'''

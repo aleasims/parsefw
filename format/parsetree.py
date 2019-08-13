@@ -21,10 +21,10 @@ class Struct(ParseNode):
 class Array(ParseNode):
     _attrs = ParseNode._attrs + ['count']
 
-    def __init__(self, start: int, end: int, count: int,
+    def __init__(self, start: int, end: int,
                  childs: List['ParseNode'],
                  parent: Optional['ParseNode'] = None):
-        super().__init__(start, end, childs, parent, count=count)        
+        super().__init__(start, end, childs, parent, count=len(childs))        
 
 
 class Value(ParseNode):
