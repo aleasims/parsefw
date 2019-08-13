@@ -1,11 +1,11 @@
 from typing import Any, Callable, List, Optional
 
 from format.runtime.types import FutureBool, FutureInt, FutureString
-from format.tree import AttrNode, Node, SimpleAttrNode, SimpleNode, dfs, bfs
+from format.tree import AttrNode, Node, SimpleAttrNode, SimpleNode, bfs, dfs
 
 
-class SpecNode(Node):
-    pass
+class SpecNode(AttrNode):
+    _attrs = ['name', 'offset']
 
 
 class Value(SimpleAttrNode, SpecNode):
@@ -14,7 +14,7 @@ class Value(SimpleAttrNode, SpecNode):
     Refers to words (terminal sequences).
     '''
 
-    _attrs = ['length', 'endianness']
+    _attrs = SpecNode._attrs + ['length', 'endianness']
 
     def __init__(self, length: FutureInt, parent: Optional[Node] = None,
                  endianness: FutureString = 'big'):
@@ -29,8 +29,6 @@ class Type(SimpleAttrNode, SpecNode):
     Refers to nonterminal symbol.
     '''
 
-    _attrs = ['name']
-
     def __init__(self, name: str, struct: List[Node],
                  parent: Optional[Node] = None):
         super().__init__(struct, parent, name=name)
@@ -38,7 +36,7 @@ class Type(SimpleAttrNode, SpecNode):
 
 class OptionalType(Type):
 
-    _attrs = ['name', 'condition']
+    _attrs = Type._attrs + ['condition']
 
     def __init__(self, name: str, struct: List[Node], condition: FutureBool,
                  parent: Optional[Node] = None):
@@ -63,7 +61,7 @@ class Repeat(SpecNode):
 class RepeatCount(SimpleAttrNode, Repeat):
     '''Represents structure, repeated specified times.'''
 
-    _attrs = ['count']
+    _attrs = Repeat._attrs + ['count']
 
     def __init__(self, body: Node, count: FutureInt, parent: Optional[Node] = None):
         super().__init__([body], parent, count=count)
