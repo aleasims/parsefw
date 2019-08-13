@@ -7,6 +7,8 @@ from typing import Any, Callable, Generator, List, Optional
 
 
 class Node:
+    '''Tree node interface.'''
+
     @property
     def childs(self) -> List['Node']:
         raise NotImplementedError
@@ -27,6 +29,8 @@ class Node:
 
 
 class AttrNode(Node):
+    '''Attribute tree node interface.'''
+
     _attrs: List[str] = []
 
     @classmethod
@@ -35,9 +39,9 @@ class AttrNode(Node):
 
     def __getitem__(self, key):
         if not isinstance(key, str):
-            raise ValueError
+            raise ValueError(key)
         if key not in self.attrs():
-            raise AttributeError
+            raise AttributeError(key)
         return getattr(self, key, None)
 
     def __repr__(self):
@@ -62,20 +66,11 @@ class SimpleNode(Node):
         return self._parent
 
 
-class SimpleAttrNode(AttrNode):
+class SimpleAttrNode(SimpleNode, AttrNode):
     def __init__(self, childs: List[Node], parent: Node = None, **kwargs):
-        self._childs = childs
-        self._parent = parent
+        super().__init__(childs, parent)
         for key, value in kwargs.items():
             setattr(self, key, value)
-
-    @property
-    def childs(self):
-        return self._childs
-
-    @property
-    def parent(self):
-        return self._parent
 
 
 def dfs(node,
