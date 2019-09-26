@@ -1,6 +1,9 @@
 import unittest
-from format.spectree import Type, Value, RepeatCount, RepeatUntil, Select, OptionalType, dfs, bfs
-from format.runtime.types import FutureBool, FutureInt
+
+from parsefw.structure.runtime.types import FutureBool, FutureInt
+from parsefw.structure.spectree import (OptionalType, RepeatCount, RepeatUntil,
+                                        Select, Type, Value, bfs, dfs)
+
 
 class TestSpecTree(unittest.TestCase):
     def test_creation(self):

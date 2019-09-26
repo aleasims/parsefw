@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from format.spectree import SpecNode
-from format.tree import AttrNode, SimpleAttrNode
+from parsefw.structure.spectree import SpecNode
+from parsefw.structure.tree import AttrNode, SimpleAttrNode
 
 
 class ParseNode(SimpleAttrNode):

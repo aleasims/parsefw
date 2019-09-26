@@ -1,6 +1,6 @@
 import unittest
 
-from format.parsetree import Array, Struct, Value
+from parsefw.structure.parsetree import Array, Struct, Value
 
 # python -m unittest discover -s tests -vc
 

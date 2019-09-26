@@ -1,7 +1,7 @@
 from typing import Any, Callable, List, Optional
 
-from format.runtime.types import FutureBool, FutureInt, FutureString
-from format.tree import AttrNode, Node, SimpleAttrNode, SimpleNode, bfs, dfs
+from parsefw.structure.runtime.types import FutureBool, FutureInt, FutureString
+from parsefw.structure.tree import AttrNode, Node, SimpleAttrNode, SimpleNode, bfs, dfs
 
 
 class SpecNode(AttrNode):

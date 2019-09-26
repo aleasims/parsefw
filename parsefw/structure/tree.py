@@ -1,21 +1,33 @@
-"""This module only responsible for abstract tree 
-manipulations.
-"""
+"""This module provides abstract tree objects and manipulations."""
 
 import queue
-from typing import Any, Callable, Generator, List, Optional
+from typing import Any, Callable, Generator, List, Optional, TypeVar
+
+TNode = TypeVar('Node')
 
 
 class Node:
-    '''Tree node interface.'''
+    """Tree node interface."""
 
-    @property
-    def childs(self) -> List['Node']:
-        raise NotImplementedError
+    childs: List[TNode] = []
+    parent: Optional[TNode] = None
 
-    @property
-    def parent(self) -> Optional['Node']:
-        raise NotImplementedError
+    def __init__(self, childs, parent=None):
+        self.childs = childs
+        self.parent = parent
+
+    def add_child(self, node: TNode, position: Optional[int]):
+        if position is not None and position not in range(0, len(self.childs) + 1):
+            raise ValueError(
+                'position argument must be in range [0 ... len(childs)]')
+        pos = len(self.childs) if position is None else position
+        self.childs.insert(pos, node)
+        node.parent = self
+
+    def remove_child(self, node: Optional[TNode] = None,
+                     position: Optional[int] = None):
+        if node is not None:
+            
 
     @property
     def type(self):
@@ -35,7 +47,7 @@ class Node:
 
 
 class AttrNode(Node):
-    '''Attribute tree node interface.'''
+    """Attribute tree node interface."""
 
     _attrs: List[str] = []
 
@@ -59,7 +71,9 @@ class AttrNode(Node):
 
 
 class SimpleNode(Node):
-    def __init__(self, childs: List[Node], parent: Node = None):
+    """Simple implementation of init."""
+
+    def __init__(self, childs: List[TNode], parent: TNode):
         self._childs = childs
         self._parent = parent
 
@@ -73,15 +87,15 @@ class SimpleNode(Node):
 
 
 class SimpleAttrNode(SimpleNode, AttrNode):
-    def __init__(self, childs: List[Node], parent: Node = None, **kwargs):
+    def __init__(self, childs: List[TNode], parent: TNode, **kwargs):
         super().__init__(childs, parent)
         for key, value in kwargs.items():
             setattr(self, key, value)
 
 
 def dfs(node,
-        visit: Optional[Callable[[Node], None]] = None,
-        callback: Optional[Callable[[Node], None]] = None) -> Generator:
+        visit: Optional[Callable[[TNode], None]] = None,
+        callback: Optional[Callable[[TNode], None]] = None) -> Generator:
     '''Depth-first search'''
 
     if visit is not None:
@@ -96,7 +110,7 @@ def dfs(node,
 
 
 def bfs(node,
-        visit: Optional[Callable[[Node], None]] = None) -> Generator:
+        visit: Optional[Callable[[TNode], None]] = None) -> Generator:
     '''Breadth-first search'''
 
     nodes_left: queue.Queue = queue.Queue()
