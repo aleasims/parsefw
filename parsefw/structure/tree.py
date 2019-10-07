@@ -26,6 +26,12 @@ class Node:
         elif isinstance(arg, int):
             self.childs.pop(arg)
 
+    def bfs(self):
+        yield from bfs(self)
+
+    def dfs(self):
+        yield from dfs(self)
+
     def __str__(self):
         return '<{type} {label}>'.format(
             type=self.__class__.__name__,
@@ -35,12 +41,6 @@ class Node:
         return '<{type} {label}>'.format(
             type=self.__class__.__name__,
             label=self.label)
-
-    def bfs(self):
-        yield from bfs(self)
-
-    def dfs(self):
-        yield from dfs(self)
 
 
 class AttrNode(Node):

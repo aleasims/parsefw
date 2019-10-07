@@ -1,36 +1,34 @@
-from typing import Any, Callable, List, Optional
+from typing import List, Optional
 
 from parsefw.structure.runtime.types import FutureBool, FutureInt, FutureString
-from parsefw.structure.tree import AttrNode, Node, SimpleAttrNode, SimpleNode, bfs, dfs
+from parsefw.structure.tree import AttrNode, TNode
 
 
 class SpecNode(AttrNode):
-    _attrs = ['name', 'offset']
+    pass
 
 
-class Value(SimpleAttrNode, SpecNode):
-    '''Represents raw byte sequence.
+class Value(SpecNode):
+    """Represents raw byte sequence.
 
     Refers to words (terminal sequences).
-    '''
+    """
 
-    _attrs = SpecNode._attrs + ['length', 'endianness']
-
-    def __init__(self, length: FutureInt, parent: Optional[Node] = None,
+    def __init__(self, length: FutureInt, parent: Optional[TNode] = None,
                  endianness: FutureString = 'big'):
         super().__init__([], parent,
                          length=length,
                          endianness=endianness)
 
 
-class Type(SimpleAttrNode, SpecNode):
+class Type(SpecNode):
     '''Represents structured type.
 
     Refers to nonterminal symbol.
     '''
 
-    def __init__(self, name: str, struct: List[Node],
-                 parent: Optional[Node] = None):
+    def __init__(self, name: str, struct: List[TNode],
+                 parent: Optional[TNode] = None):
         super().__init__(struct, parent, name=name)
 
 
@@ -38,14 +36,14 @@ class OptionalType(Type):
 
     _attrs = Type._attrs + ['condition']
 
-    def __init__(self, name: str, struct: List[Node], condition: FutureBool,
-                 parent: Optional[Node] = None):
+    def __init__(self, name: str, struct: List[TNode], condition: FutureBool,
+                 parent: Optional[TNode] = None):
         super().__init__(name, struct)
         self.condition = condition
 
 
-class Select(SimpleNode, SpecNode):
-    def __init__(self, variants: List[Node], parent: Optional[Node] = None):
+class Select(SpecNode):
+    def __init__(self, variants: List[TNode], parent: Optional[TNode] = None):
         super().__init__(variants, parent)
 
 
