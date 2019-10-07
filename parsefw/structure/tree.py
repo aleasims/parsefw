@@ -1,43 +1,40 @@
 """This module provides abstract tree objects and manipulations."""
 
 import queue
-from typing import Any, Callable, Generator, List, Optional, TypeVar
+from typing import Callable, Generator, List, Optional, TypeVar, Union
 
 TNode = TypeVar('Node')
 
 
 class Node:
-    """Tree node interface."""
+    """Tree node."""
 
-    childs: List[TNode] = []
-    parent: Optional[TNode] = None
-
-    def __init__(self, childs, parent=None):
-        self.childs = childs
+    def __init__(self, childs: Optional[List[TNode]] = None,
+                 parent: Optional[TNode] = None,
+                 label: Optional[str] = None):
+        self.childs = childs if childs is not None else []
         self.parent = parent
+        self.label = label if label is not None else 'node_{}'.format(id(self))
 
-    def add_child(self, node: TNode, position: Optional[int]):
-        if position is not None and position not in range(0, len(self.childs) + 1):
-            raise ValueError(
-                'position argument must be in range [0 ... len(childs)]')
-        pos = len(self.childs) if position is None else position
-        self.childs.insert(pos, node)
-        node.parent = self
+    def add_child(self, node: TNode, position: Optional[int] = None):
+        position = len(self.childs) if position is None else position
+        self.childs.insert(position, node)
 
-    def remove_child(self, node: Optional[TNode] = None,
-                     position: Optional[int] = None):
-        if node is not None:
-            
-
-    @property
-    def type(self):
-        return self.__class__.__name__
+    def remove_child(self, arg: Union[int, TNode]):
+        if isinstance(arg, Node):
+            self.childs.pop(self.childs.index(arg))
+        elif isinstance(arg, int):
+            self.childs.pop(arg)
 
     def __str__(self):
-        return '<{}>'.format(self.type)
+        return '<{type} {label}>'.format(
+            type=self.__class__.__name__,
+            label=self.label)
 
     def __repr__(self):
-        return '<{}>'.format(self.type)
+        return '<{type} {label}>'.format(
+            type=self.__class__.__name__,
+            label=self.label)
 
     def bfs(self):
         yield from bfs(self)
@@ -47,56 +44,35 @@ class Node:
 
 
 class AttrNode(Node):
-    """Attribute tree node interface."""
+    """Attribute tree node."""
 
-    _attrs: List[str] = []
+    def __init__(self, childs=None, parent=None, label=None, **kwargs):
+        super().__init__(childs, parent, label)
+        self.attrs = kwargs
 
-    @classmethod
-    def attrs(cls):
-        return cls._attrs
+    def get_attr(self, name):
+        return self.attrs[name]
+
+    def set_attr(self, name, value):
+        self.attrs[name] = value
 
     def __getitem__(self, key):
-        if not isinstance(key, str):
-            raise ValueError(key)
-        if key not in self.attrs():
-            raise AttributeError(key)
-        return getattr(self, key, None)
+        return self.get_attr(key)
+
+    def __setitem__(self, key, value):
+        self.set_attr(key, value)
 
     def __repr__(self):
-        return '<{type} {attrs}>'.format(
-            type=self.type,
-            attrs=', '.join(['{key}={value}'.format(key=key,
-                                                    value=str(self[key]))
-                             for key in self.attrs()]))
-
-
-class SimpleNode(Node):
-    """Simple implementation of init."""
-
-    def __init__(self, childs: List[TNode], parent: TNode):
-        self._childs = childs
-        self._parent = parent
-
-    @property
-    def childs(self):
-        return self._childs
-
-    @property
-    def parent(self):
-        return self._parent
-
-
-class SimpleAttrNode(SimpleNode, AttrNode):
-    def __init__(self, childs: List[TNode], parent: TNode, **kwargs):
-        super().__init__(childs, parent)
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+        return '<{type} {label} [{attrs}]>'.format(
+            type=self.__class__.__name__,
+            label=self.label,
+            attrs=', '.join([str(key) for key in self.attrs.keys()]))
 
 
 def dfs(node,
         visit: Optional[Callable[[TNode], None]] = None,
         callback: Optional[Callable[[TNode], None]] = None) -> Generator:
-    '''Depth-first search'''
+    """Depth-first search."""
 
     if visit is not None:
         visit(node)
@@ -111,7 +87,7 @@ def dfs(node,
 
 def bfs(node,
         visit: Optional[Callable[[TNode], None]] = None) -> Generator:
-    '''Breadth-first search'''
+    """Breadth-first search."""
 
     nodes_left: queue.Queue = queue.Queue()
     nodes_left.put(node)
