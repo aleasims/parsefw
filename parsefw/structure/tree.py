@@ -12,19 +12,15 @@ class Node:
     Attributes:
         parent (Node) - parent node
         childs (List[Node]) - list of child nodes
-        label (str) - if not set, will be generated
     """
 
     def __init__(self,
                  parent: Optional[TNode] = None,
                  childs: Optional[List[TNode]] = None,
-                 label: Optional[str] = None,
                  **kwargs):
         self.childs = childs if childs is not None else []
         self.parent = parent
-        self.label = label if label is not None else '{}_{}'.format(
-            self.classname(), id(self))
-        self.attrs = list(kwargs.keys()) + ['label']
+        self.attrs = list(kwargs.keys())
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -48,14 +44,12 @@ class Node:
         yield from dfs(self)
 
     def __str__(self):
-        return '{type} {label}'.format(
-            type=self.classname(),
-            label=self.label)
+        return '{type}'.format(
+            type=self.classname())
 
     def __repr__(self):
-        return '<{type} {label} {attrs}>'.format(
-            type=self.__class__.__name__,
-            label=self.label,
+        return '<{type} {attrs}>'.format(
+            type=self.classname(),
             attrs=self.attrs)
 
 
