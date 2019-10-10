@@ -7,12 +7,7 @@ TNode = TypeVar('Node')
 
 
 class Node:
-    """Attribute tree node.
-
-    Attributes:
-        parent (Node) - parent node
-        childs (List[Node]) - list of child nodes
-    """
+    """Attribute tree node."""
 
     def __init__(self,
                  parent: Optional[TNode] = None,
@@ -44,8 +39,7 @@ class Node:
         yield from dfs(self)
 
     def __str__(self):
-        return '{type}'.format(
-            type=self.classname())
+        return self.classname()
 
     def __repr__(self):
         return '<{type} {attrs}>'.format(

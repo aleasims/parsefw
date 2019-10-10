@@ -1,72 +1,25 @@
-from typing import List, Optional
 
-from parsefw.structure.runtime.types import FutureBool, FutureInt, FutureString
-from parsefw.structure.tree import AttrNode, TNode
+import sys
+sys.path.insert(0, '/home/alea/parsefw')
 
-
-class SpecNode(AttrNode):
-    pass
+from parsefw.structure.regtree import RegNode
 
 
-class Value(SpecNode):
-    """Represents raw byte sequence.
-
-    Refers to words (terminal sequences).
-    """
-
-    def __init__(self, length: FutureInt, parent: Optional[TNode] = None,
-                 endianness: FutureString = 'big'):
-        super().__init__([], parent,
-                         length=length,
-                         endianness=endianness)
-
-
-class Type(SpecNode):
-    '''Represents structured type.
-
-    Refers to nonterminal symbol.
-    '''
-
-    def __init__(self, name: str, struct: List[TNode],
-                 parent: Optional[TNode] = None):
-        super().__init__(struct, parent, name=name)
-
-
-class OptionalType(Type):
-
-    _attrs = Type._attrs + ['condition']
-
-    def __init__(self, name: str, struct: List[TNode], condition: FutureBool,
-                 parent: Optional[TNode] = None):
-        super().__init__(name, struct)
-        self.condition = condition
-
-
-class Select(SpecNode):
-    def __init__(self, variants: List[TNode], parent: Optional[TNode] = None):
-        super().__init__(variants, parent)
-
-
-class Repeat(SpecNode):
-    '''Represents repeated structure.
-
-    Refers to recursion in grammars.
-    '''
+class SpecNode(RegNode):
+    """Marks that node as a node of spectree."""
 
     pass
 
 
-class RepeatCount(SimpleAttrNode, Repeat):
-    '''Represents structure, repeated specified times.'''
-
-    _attrs = Repeat._attrs + ['count']
-
-    def __init__(self, body: Node, count: FutureInt, parent: Optional[Node] = None):
-        super().__init__([body], parent, count=count)
+class Struct(SpecNode):
+    pass
 
 
-class RepeatUntil(Repeat):
-    '''Represents structure, repeated until special symbol come across.'''
+class Byte(SpecNode):
+    def __init__(self, parent: SpecNode):
+        super().__init__(parent)
 
-    def __init__(self, body: Node, delimiter: Value, parent: Optional[Node] = None):
-        super().__init__([body, delimiter], parent)
+
+if __name__ == "__main__":
+    root = Struct()
+    b = Byte(root)
