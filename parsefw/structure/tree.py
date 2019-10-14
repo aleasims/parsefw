@@ -13,8 +13,8 @@ class Node:
                  parent: Optional[TNode] = None,
                  childs: Optional[List[TNode]] = None,
                  **kwargs):
-        self.childs = childs if childs is not None else []
         self.parent = parent
+        self.childs = childs if childs is not None else []
         self.attrs = list(kwargs.keys())
         for key, value in kwargs.items():
             setattr(self, key, value)

@@ -16,7 +16,7 @@ class RegNode(Node):
                  childs: Optional[List[Node]] = None,
                  modifs: Optional[List[EdgeModifier]] = None,
                  **kwargs):
-        super().__init__(parent, childs, **kwargs)
         self.modifs = modifs if modifs is not None else []
-        assert len(self.childs) == len(
-            self.modifs), 'All childs must be marked'
+        if len(self.childs) != len(self.modifs):
+            raise ValueError('All childs must be marked')
+        super().__init__(parent, childs, **kwargs)
