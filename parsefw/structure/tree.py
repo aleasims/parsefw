@@ -1,29 +1,50 @@
 """This module provides abstract tree objects and manipulations."""
 
 import queue
-from typing import Callable, Generator, List, Optional, TypeVar, Union
+from typing import Callable, Generator, Optional, TypeVar, Union
+from parsefw.structure.named_list import NamedList
 
 TNode = TypeVar('Node')
 
 
 class Node:
-    """Attribute tree node."""
+    """Attribute tree node.
 
-    def __init__(self,
-                 parent: Optional[TNode] = None,
-                 childs: Optional[List[TNode]] = None,
-                 **kwargs):
-        self.parent = parent
-        self.childs = childs if childs is not None else []
-        self.attrs = list(kwargs.keys())
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    Attributes:
+        label (str, optional)
+        parent (Node, optional)
+        childs (NamedList, optional)
+    """
+
+    def __init__(self, label=None):
+        self.label = label
+        self.childs = None
+        self._parent = None
+
+    @classmethod
+    def new(cls, label=None, parent=None, childs=None):
+        node = cls(label)
+        node.parent = parent
+        node.childs = childs
+        return node
 
     def classname(self):
         return self.__class__.__name__
 
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
+        if not isinstance(value, Node):
+            raise TypeError
+        self._parent = value
+
     def add_child(self, node: TNode, position: Optional[int] = None):
-        position = len(self.childs) if position is None else position
+        if self.childs is None:
+            self.childs = NamedList(keyattr='label')
+        position = position if position is not None else len(self.childs)
         self.childs.insert(position, node)
 
     def remove_child(self, arg: Union[int, TNode]):
@@ -45,13 +66,6 @@ class Node:
         return '<{type} {attrs}>'.format(
             type=self.classname(),
             attrs=self.attrs)
-
-
-class Tree(Node):
-    """Represents root node."""
-
-    def __init__(self, childs=None, label=None, **kwargs):
-        super().__init__(None, childs, label, **kwargs)
 
 
 def dfs(node,

@@ -2,8 +2,9 @@ from parsefw.structure.tree import Node
 
 
 class ParseNode(Node):
-    def __init__(self, start, end, *args, **kwargs):
-        super().__init__(*args, **kwargs, start=start, end=end)
+    def __init__(self, start, end, label, *args, **kwargs):
+        super().__init__(*args, **kwargs, start=start, end=end, label=label)
+        self.fields = self.childs
 
 
 class Struct(ParseNode):
